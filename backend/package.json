@@ -1,0 +1,28 @@
+{
+  "name": "twitterapibackend",
+  "description": "REST API for senior design",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env GOOGLE_APPLICATION_CREDENTIALS='./gcloud-private-key.json' node index.js"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "author": "William Krska",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/language": "^5.0.2",
+    "axios": "^0.27.2",
+    "botometer": "^1.0.12",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "node-botometer": "^0.1.7",
+    "node-botometer-rapid-api": "^1.0.1",
+    "twitter-api-v2": "^1.12.7",
+    "twitter-lite": "^1.1.0"
+  },
+  "keywords": []
+}
