@@ -23,7 +23,7 @@ async function searchForTweets(screen_name) {
             bearer_token: twitter_response.access_token,
         });
 
-        const num_tweets = 2;
+        const num_tweets = 200;
 
         user_response = await twitter_app.get(`/users/lookup`, {
             screen_name: screen_name,
@@ -44,9 +44,13 @@ async function searchForTweets(screen_name) {
         for (tweet of timeline_response) {
             allTweets += tweet.text + "\n";
         }
-        const sentimentScore = await getSentimentScore(allTweets);
-        console.log(`The sentiment from user ${screen_name} is: ${sentimentScore}`);
-
+        const sentimentScores = await getSentimentScore(allTweets);
+        
+        // Sentiment Sort and discard, by Salience and not "OTHER"
+        const max_entities = 10; // number of returned entities
+        sentimentScores.sort((a,b) => (a.salience < b.salience) ? 1 : -1); // sort function with custom comparator
+        const entitySentiments = sentimentScores.slice(0,max_entities);
+        console.log(entitySentiments);
         // Botometer Search
         const twitter_data = {
             "user": user_response[0],
@@ -56,11 +60,14 @@ async function searchForTweets(screen_name) {
         
         // console.log(twitter_data);
         const botScore = await getBotScore(twitter_data);
-        console.log(`The user ${screen_name}'s bot score is: ${botScore}`);
         
+        return { sentiments: entitySentiments, bot: botScore };
     } catch(e) {
-        console.log("There was an error calling the Twitter API");
+        console.log("There was an error calling the Twitter or Google API");
         console.dir(e);
+        if (e.errors[0].code == 17) {
+            return  { sentiments: null, bot: null }
+        }
     }
 }
 
@@ -71,10 +78,10 @@ async function getSentimentScore(text) {
     };
 
     // Detects the sentiment of the text
-    const [nlp_result] = await languageClient.analyzeSentiment({document: document});
-    const sentiment = nlp_result.documentSentiment;
+    const [nlp_result] = await languageClient.analyzeEntitySentiment({document: document});
+    const entities = nlp_result.entities;
 
-    return sentiment.score;
+    return entities;
 }
 
 async function getBotScore(twitter_data) {
@@ -94,39 +101,33 @@ async function getBotScore(twitter_data) {
 }
 
 express_app.use( express.json() )
-express_app.get('/tshirt', (req, res) => {
-    res.status(200).send({
-        tshirt: 'tf',
-        size: 'lg'
-    })
-});
+// express_app.get('/tshirt', (req, res) => {
+//     res.status(200).send({
+//         tshirt: 'tf',
+//         size: 'lg'
+//     })
+// });
 
-express_app.post('/tshirt/:id', (req, res) => {
-    const { id } = req.params;
-    const { logo } = req.body;
+express_app.post('/full', (req, res) => {
+    const { screen_name } = req.body;
+    console.log(`Recieved request for ${screen_name}`);
 
-    if (!logo) {
-         res.status(418).send({message:'message lol'})
+    if (!screen_name) {
+         res.status(418).send({message:'Must provide a screen_name'})
+    } else {
+        searchForTweets(screen_name).then(result => {
+            try {
+                res.send({
+                    msg: result
+                })
+            } catch(e) {
+                console.dir(e);
+            }
+        })
     }
-
-    res.send({
-        tshirt: `response of some sort logo ${logo} and id ${id}`
-      })
 });
 
 express_app.listen(PORT, () => {
     console.log(`twitterAPI: listening on port ${PORT}`);
-    // const names = ["wutrain"];
-
-    // B.getBatchBotScores(names,data => {
-    //     console.log(data);
-    // });
+    
   });
-
-async function run() {
-    const results = await B.getScores(["@wutrain"]);
- 
-    console.log(results);
-}
-
-run();
