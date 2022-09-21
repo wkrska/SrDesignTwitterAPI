@@ -9,6 +9,8 @@ You will need a google cloud account, a project in it, and create a service acco
 
 The API responds with the following format
 {
-    sentiments: [object(entity)](https://cloud.google.com/natural-language/docs/reference/rest/v1beta2/Entity)
-    bot: [object(BotometerResponse)](https://rapidapi.com/OSoMe/api/botometer-pro/details)
+    msg: {
+        sentiments: [object(entity)](https://cloud.google.com/natural-language/docs/reference/rest/v1beta2/Entity),
+        bot: [object(BotometerResponse)](https://rapidapi.com/OSoMe/api/botometer-pro/details),
+    }
 }
