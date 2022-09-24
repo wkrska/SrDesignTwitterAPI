@@ -97,7 +97,7 @@ async function getBotScore(twitter_data) {
     };
 
     const botometer_result = await axios.request(options);
-    return botometer_result.data.cap.english;
+    return botometer_result.data;
 }
 
 express_app.use( express.json() )
